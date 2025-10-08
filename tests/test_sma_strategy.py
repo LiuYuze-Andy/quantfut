@@ -1,5 +1,5 @@
 import pandas as pd
-from src.quantfut.strategy.sma import SMACrossover
+from quantfut.strategy.sma import SMACrossover
 
 def test_sma_signals_shape():
     idx = pd.date_range("2020-01-01", periods=100, freq="D", tz="UTC")

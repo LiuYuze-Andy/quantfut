@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
-from src.quantfut.portfolio.backtester import Backtester
-from src.quantfut.execution.broker import PaperBroker
-from src.quantfut.config import Instrument
-from src.quantfut.strategy.sma import SMACrossover
+from quantfut.portfolio.backtester import Backtester
+from quantfut.execution.broker import PaperBroker
+from quantfut.config import Instrument
+from quantfut.strategy.sma import SMACrossover
 
 def make_df(n=200):
     idx = pd.date_range("2020-01-01", periods=n, freq="B", tz="UTC")
