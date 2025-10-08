@@ -1,3 +1,4 @@
+# file: src/quantfut/cli.py
 from __future__ import annotations
 import argparse
 from pathlib import Path
@@ -9,8 +10,11 @@ from .execution.broker import PaperBroker
 from .portfolio.backtester import Backtester
 from .strategy.sma import SMACrossover
 
-def _ensure_parent(p: Path) -> None:
-    p.parent.mkdir(parents=True, exist_ok=True)
+def _ensure_dir(p: Path) -> None:
+    """Create directory for either a dir-path or a file-path.
+    WHY: backtest writes to 'runs/<sym>/*' (dir), gen-sample writes a CSV (file).
+    """
+    (p if p.suffix == "" else p.parent).mkdir(parents=True, exist_ok=True)
 
 def cmd_gen_sample(args: argparse.Namespace) -> None:
     rng = np.random.default_rng(42)
@@ -32,7 +36,7 @@ def cmd_gen_sample(args: argparse.Namespace) -> None:
         "volume": vol,
     })
     out = Path(args.out or f"data/{args.symbol}.csv")
-    _ensure_parent(out)
+    _ensure_dir(out)
     df.to_csv(out, index=False)
     print(f"Sample data written: {out}")
 
@@ -71,20 +75,22 @@ def cmd_backtest(args: argparse.Namespace) -> None:
     metr = res["metrics"]
 
     outdir = Path(args.outdir or "runs") / sym
-    _ensure_parent(outdir)
+    _ensure_dir(outdir)
     eq.to_csv(outdir / "equity.csv", header=True)
     pd.Series(sig, name="signal").to_csv(outdir / "signals.csv", header=True)
 
     print(f"[{sym}] Backtest done.")
     print(f"Equity final: {eq.iloc[-1]:.2f}")
-    print(f"Metrics: "
-          f"TotRet={metr.total_return:.2%} "
-          f"AnnRet={metr.annual_return:.2%} "
-          f"AnnVol={metr.annual_vol:.2%} "
-          f"Sharpe={metr.sharpe:.2f} "
-          f"MaxDD={metr.max_drawdown:.2%} "
-          f"WinRate={metr.win_rate:.2%} "
-          f"Trades={metr.n_trades}")
+    print(
+        "Metrics: "
+        f"TotRet={metr.total_return:.2%} "
+        f"AnnRet={metr.annual_return:.2%} "
+        f"AnnVol={metr.annual_vol:.2%} "
+        f"Sharpe={metr.sharpe:.2f} "
+        f"MaxDD={metr.max_drawdown:.2%} "
+        f"WinRate={metr.win_rate:.2%} "
+        f"Trades={metr.n_trades}"
+    )
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="quantfut")
